@@ -1,0 +1,98 @@
+@page "/"
+@using AxorP1.Shared.Components
+@inherits IndexBase
+
+<PageTitle>Tableau de bord</PageTitle>
+
+@if (DataSource.Count() == 0) 
+{
+   @*  Loading *@
+    <LoaderComponent />
+}
+else
+{
+    string visibility = "visible";
+
+    if (IsDashboardVisible == false) // Wait until dashboard creation is complete
+    {
+        <div>
+            <LoaderComponent />
+        </div>
+
+        visibility = "invisible";
+    }
+
+
+
+  @*  DashboardLayout *@
+  <div class="dashboard-container @visibility">
+     <div>
+        <ErrorBoundary>
+            <ChildContent>
+
+                @* MultiSelect List of PanelObjects *@
+                <div class="MultiSelect-container">
+                    <SfMultiSelect @ref="@MultiSelectRef" CssClass="MultiSelect" TValue="List<DropdownData>" TItem="DropdownData" DataSource="@DropdownItems" Value="@SelectedPanels" Placeholder="Personnaliser" Mode="VisualMode.CheckBox" ShowClearButton="false" FloatLabelType="Syncfusion.Blazor.Inputs.FloatLabelType.Always" ShowDropDownIcon="true" Width="auto" PopupWidth="auto">
+                        <MultiSelectFieldSettings Text="Text" Value="Value"></MultiSelectFieldSettings>
+                        <MultiSelectEvents TValue="List<DropdownData>" TItem="DropdownData" OnValueRemove="@OnValueRemove" OnValueSelect="@OnValueSelect"></MultiSelectEvents>
+                    </SfMultiSelect>
+
+                        <SfButton CssClass="btnMultiSelect" @onclick="()=>{ IsDialogVisible = true;}" Content="Rénitialiser" IsPrimary="true"></SfButton>
+                </div>
+
+                <SfDashboardLayout @ref="@DashboardLayout" ID="SfMainDashboardLayout" Columns="@Columns" MediaQuery="@MediaQuery" CellSpacing="@Spacing" EnablePersistence="true" AllowResizing="true" ShowGridLines="true" AllowFloating="true" AllowDragging="true" DraggableHandle=".e-panel-header">
+                    <DashboardLayoutEvents Created="@Created" OnResizeStop="@OnResizeStop" Changed="@Changed" />
+                    <DashboardLayoutPanels>
+
+                        @try
+                        {
+                                @foreach (PanelObject Panel in InitialPanelData)
+                                    {
+                                     <DashboardLayoutPanel Id="@Panel.Id" Row="@Panel.Row" Column="@Panel.Column" SizeX="@Panel.SizeX" SizeY="@Panel.SizeY" MinSizeX="@Panel.MinSizeX" MinSizeY="@Panel.MinSizeY">
+                                         <HeaderTemplate>
+                                            <div>
+                                                <span>@Panel.Title</span>
+                                                <span class="btn btnClosePanel" @onclick="@(()=> OnClosePanelClick(Panel.Id))"><SfIcon Name="IconName.Close"></SfIcon></span>
+                                             </div> 
+                                         </HeaderTemplate>
+
+                                         <ContentTemplate>
+                                             <div class="panel">
+                                                   <DynamicComponent @ref="@componentsReferences[Panel.Id]" Type="@Panel.ComponentType" Parameters="@Panel.Parameters" />
+                                             </div>
+                                         </ContentTemplate>
+                                     </DashboardLayoutPanel>
+                                }
+                        }
+                        catch(Exception ex)
+                        {
+                                Logger.LogError($"Error: {ex.Message} {ex.StackTrace}");
+                        }
+            
+
+                    </DashboardLayoutPanels>
+                </SfDashboardLayout>
+
+            </ChildContent>
+            <ErrorContent>
+                    @* Error message *@
+                    <Error />
+            </ErrorContent>
+        </ErrorBoundary>
+     </div>
+  </div>
+}
+
+
+@* Dialog to ask user to confirm reset layout action *@
+<SfDialog Width="30vw" IsModal="true" Visible="@IsDialogVisible" Target=".page">
+    <DialogAnimationSettings Effect="DialogEffect.Fade" Duration=500 />
+    <DialogTemplates>
+        <Header>Rénitialiser</Header>
+        <Content>Êtes-vous sûr de vouloir réinitialiser la disposition ?</Content>
+        <FooterTemplate>
+            <button class="btn btn-outline-success" @onclick="@OnResetLayoutClick">Oui</button>
+            <button class="btn btn-outline-danger" @onclick="()=>{ IsDialogVisible = false;}">Non</button>
+        </FooterTemplate>
+    </DialogTemplates>
+</SfDialog>                  

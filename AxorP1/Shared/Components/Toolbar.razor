@@ -1,0 +1,46 @@
+﻿@inherits ToolbarBase
+
+@* Toolbar component*@
+
+<SfToolbar @ref=@ToolbarRef CssClass="dockToolbar" Width="100%">
+    <ToolbarItems>
+
+        <ToolbarItem Align="ItemAlign.Left" Overflow="OverflowOption.Show" TooltipText="Accueil">
+            <Template>
+                @* Logo image *@
+                <span class="navbar-brand">
+                    <a href="/"><img alt="Logo" src="/images/ICONE-AXOR_BLANC.svg" /></a>
+                </span>
+            </Template>
+        </ToolbarItem>
+
+        <ToolbarItem Align="ItemAlign.Right" Type="ItemType.Button" Overflow="OverflowOption.Show" CssClass="btnFullScreen" TooltipText="Plein écran">
+            <Template>
+                @* Full screen icon *@
+                    <SfIcon class="FullScreenIcon toolbar-item-right" Name="@FullScreenIcon" @onclick="@FullScreenRequest"></SfIcon>
+            </Template>
+        </ToolbarItem>
+
+        <ToolbarItem Align="ItemAlign.Right" Type="ItemType.Button" Overflow="OverflowOption.Show" TooltipText="Theme">
+            <Template>
+                @* Theme switcher *@
+                    <SfSwitch CssClass="btnSwitch toolbar-item-right" Checked="@ThemeProvider.isDarkMode" OnLabel="Sombre" OffLabel="Clair" ValueChange="@switchStateChanged"></SfSwitch>
+            </Template>
+        </ToolbarItem>
+
+    </ToolbarItems>
+</SfToolbar>
+
+@* Dialog to ask user permission to enter full screen mode *@
+<SfDialog Width="30vw" IsModal="true" Visible="@IsDialogVisible" Target=".page">
+    <DialogEvents OnOverlayModalClick="@CloseDialog"></DialogEvents>
+    <DialogAnimationSettings Effect="DialogEffect.Fade" Duration=500 />
+    <DialogTemplates>
+        <Header>Plein écran</Header>
+        <Content>Souhaitez-vous passer en mode plein écran ?</Content>
+        <FooterTemplate>
+            <button class="btn btn-outline-success" @onclick="async () => { CloseDialog(); await FullScreenRequest(); }">Oui</button>
+            <button class="btn btn-outline-danger" @onclick="CloseDialog">Non</button>
+        </FooterTemplate>
+    </DialogTemplates>
+</SfDialog> 

@@ -1,0 +1,65 @@
+﻿@using Syncfusion.Blazor.DropDowns
+@using AxorP1.Shared.Components
+@using AxorP1.Services
+@inherits LayoutComponentBase
+@inject ThemeProvider ThemeProvider 
+
+@* set the theme class *@
+<div class="page @ThemeProvider.ThemeClass" >
+    <div class="page-content">
+
+        @if (IsLayoutCreated)
+        {
+            @* Side bar component *@
+            <NavMenu />
+
+            <main class="main">
+                @* Toolbar component *@
+                <Toolbar />
+            
+                @* Current page content *@
+                <article class="content" id="content">
+                    @Body
+                </article>
+            </main>
+        }
+    </div>
+</div>
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>
+
+
+@code {
+
+    protected bool IsLayoutCreated;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+
+        if (firstRender) // On first render
+        {  
+            if (ThemeProvider.isDarkMode == null)
+            {
+                ThemeProvider.MainLayout = this; // Keep instance
+
+                // Set the initial theme (user preference)
+                await ThemeProvider.InitialTheme();
+
+                // Authorize the render of components
+                IsLayoutCreated = true;
+                await Task.Delay(500);
+                StateHasChanged();
+            }
+        } 
+    }
+
+    public void StateChanged()
+    {
+        StateHasChanged();
+    }
+}

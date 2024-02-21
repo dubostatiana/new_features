@@ -1,0 +1,186 @@
+﻿@using AxorP1.Services
+@using System.ComponentModel
+@inject ILogger<ChartComponent> Logger
+@inject ThemeProvider ThemeProvider 
+
+@* CHART COMPONENT *@
+@if (IsParentCreated)
+{
+    <SfChart @ref="ChartRef"  ID="@ChartId" Theme="@ThemeProvider.AppTheme" Width="100%" Height="100%" Palettes="@Palette">
+       
+        <ChartEvents OnAxisActualRangeCalculated="AxisRangeCalculated"></ChartEvents>
+
+        <ChartArea @attributes="@AreaAttributes">
+            <ChartAreaBorder @attributes="@AreaBorderAttributes"></ChartAreaBorder>
+        </ChartArea>
+
+        <ChartMargin @attributes="@MarginAttributes"></ChartMargin>
+
+        <ChartPrimaryXAxis @attributes="@XAxisAttributes" LabelPlacement=LabelPlacement.BetweenTicks LabelIntersectAction="Syncfusion.Blazor.Charts.LabelIntersectAction.Trim">
+            <ChartAxisMajorTickLines @attributes="XAxisLinesAttributes"></ChartAxisMajorTickLines>
+            <ChartAxisLineStyle @attributes="@XAxisLineStyleAttributes"></ChartAxisLineStyle>
+            <ChartAxisMajorGridLines @attributes="@XAxisGridLinesAttributes"></ChartAxisMajorGridLines>
+            <ChartAxisLabelStyle Size="1rem"></ChartAxisLabelStyle>
+        </ChartPrimaryXAxis>
+
+        <ChartPrimaryYAxis @attributes="@YAxisAttributes" StartFromZero="true">
+
+                @if(YAxisInterval != 0 && YAxisIntervalColor != string.Empty)
+                {
+                    <ChartStriplines>
+                        <ChartStripline Opacity="0.8" Size="@YAxisInterval" IsRepeat="true" RepeatEvery="(YAxisInterval * 2)" Color="@YAxisIntervalColor"></ChartStripline>
+                    </ChartStriplines> 
+                }
+
+            <ChartAxisMajorTickLines @attributes="@YAxisLinesAttributes"></ChartAxisMajorTickLines>
+            <ChartAxisLineStyle @attributes="@YAxisLineStyleAttributes"></ChartAxisLineStyle>
+            <ChartAxisMajorGridLines @attributes="@YAxisGridLinesAttributes" Width="0"></ChartAxisMajorGridLines>
+        </ChartPrimaryYAxis>
+
+        <ChartTooltipSettings @attributes="@ToolTipAttributes">
+            <ChartTooltipTextStyle TextOverflow="TextOverflow.Trim"></ChartTooltipTextStyle>
+        </ChartTooltipSettings>
+
+        <ChartLegendSettings @attributes="@LegendAttributes"></ChartLegendSettings>
+
+        <ChartCrosshairSettings @attributes="@CrosshairAttributes">
+            <ChartCrosshairLine @attributes="@CrosshairLineAttributes"></ChartCrosshairLine>
+        </ChartCrosshairSettings>
+
+       <ChartSeriesCollection>
+            @foreach (var chart in ChartSeriesList)
+            {
+                <ChartSeries @attributes="@chart.SeriesAttributes" Width="2">
+                    <ChartMarker @attributes="@chart.MarkerAttributes">
+                        <ChartDataLabel @attributes="chart.LabelAttributes" ></ChartDataLabel>
+                    </ChartMarker>
+
+                    @if (chart.TrendlineAttributes != null)
+                    {
+                        <ChartTrendlines>
+                            <ChartTrendline @attributes="@chart.TrendlineAttributes" Fill="@Palette.Last()"></ChartTrendline>
+                        </ChartTrendlines>
+                    }
+                </ChartSeries>
+            }
+        </ChartSeriesCollection>  
+
+    </SfChart>
+}
+
+@code {
+    private SfChart? ChartRef;
+    private bool IsParentCreated; // Initiate the render only if the parent has been created
+
+    [Parameter] public string ChartId { get; set; } = string.Empty;
+
+    private string[] Palette;
+    [Parameter] public string[]? LightPalette { get; set; }
+    [Parameter] public string[]? DarkPalette { get; set; }
+
+    [Parameter] public Dictionary<string, object>? AreaAttributes { get; set; }
+    [Parameter] public Dictionary<string, object>? AreaBorderAttributes { get; set; }
+    [Parameter] public Dictionary<string, object>? MarginAttributes { get; set; } = new Dictionary<string, object> { { "Left", (double)0 }, { "Right", (double)10 }, { "Top", (double)15 }, { "Bottom", (double)10 } };
+
+    private double YAxisInterval = 0;
+    private string YAxisIntervalColor = string.Empty;
+    [Parameter] public bool EnableStriplines { get; set; } = true;
+
+    [Parameter] public Dictionary<string, object>? XAxisAttributes { get; set; }
+    [Parameter] public Dictionary<string, object>? YAxisAttributes { get; set; }
+    [Parameter] public Dictionary<string, object>? XAxisLinesAttributes { get; set; }
+    [Parameter] public Dictionary<string, object>? YAxisLinesAttributes { get; set; }
+    [Parameter] public Dictionary<string, object>? XAxisLineStyleAttributes { get; set; }
+    [Parameter] public Dictionary<string, object>? YAxisLineStyleAttributes { get; set; }
+    [Parameter] public Dictionary<string, object>? XAxisGridLinesAttributes { get; set; }
+    [Parameter] public Dictionary<string, object>? YAxisGridLinesAttributes { get; set; }
+
+    [Parameter] public Dictionary<string, object>? ToolTipAttributes { get; set; } 
+    [Parameter] public Dictionary<string, object>? LegendAttributes { get; set; }
+    [Parameter] public Dictionary<string, object>? CrosshairAttributes { get; set; }
+    [Parameter] public Dictionary<string, object>? CrosshairLineAttributes { get; set; }
+
+    [Parameter] public List<ChartSeriesConfig> ChartSeriesList { get; set; } = new List<ChartSeriesConfig>() ;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        // Set the color palette
+        if (ThemeProvider.isDarkMode != null && LightPalette != null && DarkPalette != null)
+        {
+            Palette = (bool)ThemeProvider.isDarkMode ? DarkPalette : LightPalette;
+        }
+        else
+        {
+            Palette = ThemeProvider.GetColors();
+        }
+    }
+
+    // Refresh component
+    public void Refresh()
+    {
+        try
+        {   
+            if(ChartRef != null)
+            {
+                ChartRef?.RefreshAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error trying to Refresh ChartComponent : {ex.Message}\n{ex.StackTrace}");
+        }
+    }
+
+    // Call StateHasChanged() and authorize render
+    public void StateChanged()
+    {
+        if (!IsParentCreated)
+        {
+            // Initiate the first render of the component
+            IsParentCreated = true;
+        }
+
+        InvokeAsync(() =>
+        {
+           StateHasChanged();
+        });
+    }
+
+    // Event OnAxisActualRangeCalculated
+    public void AxisRangeCalculated(AxisRangeCalculatedEventArgs args)
+    {
+        try
+        {
+            if (ChartRef != null && EnableStriplines)
+            {
+                if (args.AxisName == "PrimaryYAxis")
+                {
+                    // Set Y axis stripline size
+                    YAxisInterval = args.Interval;
+
+                    // Set Y axis stripline color
+                    YAxisIntervalColor = (bool)ThemeProvider.isDarkMode ? "var(--interval-dark)" : "var(--interval)";
+                    InvokeAsync(() =>
+                    {
+                        StateHasChanged();
+                    });
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error : {ex.Message}\n{ex.StackTrace}");
+        }
+         
+    }
+
+    public class ChartSeriesConfig
+    {
+        public Dictionary<string, object>? SeriesAttributes { get; set; }
+        public Dictionary<string, object>? TrendlineAttributes { get; set; }
+        public Dictionary<string, object>? MarkerAttributes { get; set; } = new Dictionary<string, object> { { "Visible", true } };
+        public Dictionary<string, object>? LabelAttributes { get; set; } = new Dictionary<string, object> {{ "Visible", true },{ "Position", Syncfusion.Blazor.Charts.LabelPosition.Bottom }};
+    }
+}

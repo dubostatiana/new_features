@@ -1,0 +1,113 @@
+﻿@using AxorP1.Services
+@typeparam MarkerTValue
+@inject ILogger<MapComponent<MarkerTValue>> Logger
+@inject ThemeProvider ThemeProvider
+
+@* MAP COMPONENT *@
+
+@if (IsParentCreated)
+{
+    <SfMaps @ref="MapRef" ID="@MapId" Theme="@ThemeProvider.AppTheme" Width="100%" Height="100%">
+
+        <MapsEvents OnMarkerClick="@OnMarkerClickEvent"></MapsEvents>
+        <MapsTitleSettings Text="@Title"></MapsTitleSettings>
+        <MapsMargin Bottom="0" Left="0" Right="0" Top="0"></MapsMargin>
+
+
+        <MapsLayers>
+
+            <MapsLayer ShapeData="@MapShapeData" TValue="string">
+
+                <MapsMarkerSettings >
+                    <MapsMarker @attributes="@MarkerAttributes" TValue="@MarkerTValue" Height="15.0" Width="15.0" AnimationDelay="0.0" AnimationDuration="0.0">
+                        <MapsMarkerBorder Width="1" Color="black"></MapsMarkerBorder>
+                        <MapsMarkerTooltipSettings @attributes="@MarkerToolTipAttributes"></MapsMarkerTooltipSettings>
+                    </MapsMarker>
+                </MapsMarkerSettings>
+
+                <MapsDataLabelSettings Visible="true" LabelPath="prov_name_fr" IntersectionAction="IntersectAction.Hide"></MapsDataLabelSettings>
+                <MapsShapeSettings Palette="@ThemeProvider.GetColors('D', 'B')" Autofill="true"></MapsShapeSettings>
+
+                <MapsZoomSettings Enable="@EnableZoom" EnablePanning="true" ZoomOnClick="true">
+                    <MapsZoomToolbarSettings @attributes="@ZoomToolBarAttributes"></MapsZoomToolbarSettings>   
+                </MapsZoomSettings>
+
+            </MapsLayer>
+
+        </MapsLayers>
+
+    </SfMaps>
+}
+
+@code {
+
+    private SfMaps? MapRef;
+    private bool IsParentCreated { get; set; } = false;  // Initiate the render of the Maps component only if the parent has been created
+
+    [Parameter] public string MapId { get; set; } = string.Empty;
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public bool EnableZoom { get; set; } = true;
+    [Parameter] public Dictionary<string, object>? MarkerAttributes { get; set; }
+    [Parameter] public Dictionary<string, object>? MarkerToolTipAttributes { get; set; }
+    [Parameter] public Dictionary<string, object>? ZoomToolBarAttributes { get; set; } = new Dictionary<string, object>(){ {"HorizontalAlignment", Syncfusion.Blazor.Maps.Alignment.Near }, {"Orientation", Syncfusion.Blazor.Maps.Orientation.Vertical } };
+
+    [Parameter] public EventCallback<MarkerClickEventArgs> OnMarkerClickEvent { get; set; }
+
+    // Refresh component
+    public async void Refresh()
+    {
+        //  Parent Layout is determined after a delay,
+        //  a delay must be provided before refreshing the Maps component
+        await Task.Delay(500);
+
+        try
+        {
+            if (MapRef != null)
+            {
+                MapRef?.Refresh();
+                await Task.Delay(100);
+
+                // Reset zoom
+                MapRef?.ZoomByPosition(new MapsCenterPosition() { Latitude = 0, Longitude = 0 }, 1);
+
+                // Refresh another time to make sure map is correctly positioned
+                await Task.Delay(100);
+                MapRef?.Refresh();
+            }
+        }
+        catch(Exception ex)
+        {
+            Logger.LogError($"Error trying to Refresh MapComponent : {ex.Message}\n{ex.StackTrace}");
+        }
+    }
+
+    // Call StateHasChanged() and authorize render
+    public void StateChanged()
+    {
+        if (!IsParentCreated)
+        {
+            // Initiate the first render of the component
+            IsParentCreated = true;
+        }
+
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+
+    public class MapDataSettings
+    {
+        public Boolean async { get; set; }
+        public String dataOptions { get; set; }
+        public String type { get; set; }
+    }
+
+    private MapDataSettings MapShapeData = new MapDataSettings
+    {
+            async = true,
+            type = "GET",
+            dataOptions = "maps/Canada.json"
+    };
+
+}

@@ -1,0 +1,50 @@
+﻿@using Syncfusion.Blazor.Buttons
+@inherits NavMenuBase
+
+    @* Sidebar component *@
+    
+    <SfSidebar class="dockSidebar" @ref="SidebarRef" Width="200px" DockSize="50px" Target=".page-content" Type="@Type" @bind-IsOpen="@SidebarToggle" OnClose="@OnClose" CloseOnDocumentClick="true" EnableDock="true">
+            <ChildContent>
+                @*Toggle button for the sidebar*@
+                <div class="toggler-container">
+                    <SfButton class="nav-toggler" CssClass="@ToggleClass" OnClick="@ToggleSidebar"></SfButton>
+                </div>
+
+                @* Nav Links *@
+                <nav class="nav-items @ToggleClass">
+                   @try
+                   {
+                        @* Home page *@
+                        <div class="nav-item">
+                             <NavLink class="nav-link" href="/" Match="NavLinkMatch.All">
+                                <span class="syncfusion-blazor-icons syncfusion-blazor-icon-charts icons"></span>
+                                <span class="nav-id">Acc.</span>
+                                <span class="nav-text">Tableau de bord</span>
+                             </NavLink>
+                        </div>
+                        
+                        @* Station page *@
+                        var index = 0;
+                        @foreach( var name in DataProvider.stationNames)
+                        {
+                            var path = "station/" + name.Key;
+
+                            <div class="nav-item">
+                                 <NavLink class="nav-link" href="@path" Match="NavLinkMatch.Prefix">
+                                      <span class="syncfusion-blazor-icons station-icon icons"></span>
+                                      <span class="nav-id">@name.Key</span>
+                                      <span class="nav-text">@name.Value</span>
+                                 </NavLink>
+                            </div>
+
+                            index++;
+                        } 
+                   }
+                   catch (Exception ex)
+                   {
+                        Logger.LogError($"Error: {ex.Message}\n{ex.StackTrace}");
+                   }
+            
+                </nav>
+            </ChildContent>
+     </SfSidebar>

@@ -1,0 +1,152 @@
+﻿@using AxorP1.Services
+@inject ILogger<PieChartComponent> Logger
+@inject ThemeProvider ThemeProvider
+
+@* PIE CHART FOR STATISTICS  *@
+
+@if (IsParentCreated)
+{
+    <SfAccumulationChart @ref="PieChartRef" ID="@PieChartId" Theme="@ThemeProvider.AppTheme" SelectionMode="AccumulationSelectionMode.Point" EnableBorderOnMouseMove="true" EnableAnimation="true" IsMultiSelect="false" Width="100%" Height="100%">
+        <AccumulationChartEvents OnSelectionChanged="OnSelectionChanged" OnLegendClick="OnLegendClick"></AccumulationChartEvents>
+
+        <AccumulationChartTooltipSettings @attributes="@ToolTipAttributes"></AccumulationChartTooltipSettings>
+        <AccumulationChartLegendSettings @attributes="@LegendAttributes" ToggleVisibility="false" EnableHighlight="false" TextWrap="TextWrap.Wrap"></AccumulationChartLegendSettings>
+
+        <AccumulationChartSeriesCollection>
+
+            <AccumulationChartSeries @attributes="@SeriesAttributes" InnerRadius="40%" Palettes="@Palette">
+                <AccumulationDataLabelSettings @attributes="@LabelAttributes">
+                    <AccumulationChartDataLabelFont Color="white"></AccumulationChartDataLabelFont>
+                </AccumulationDataLabelSettings>
+            </AccumulationChartSeries>
+
+        </AccumulationChartSeriesCollection>
+
+    </SfAccumulationChart>
+}
+
+
+@code {
+
+    private SfAccumulationChart? PieChartRef;
+    private bool IsParentCreated;        // Initiate the render only if the parent has been created
+    private bool AuthorizeRender = true; // Avoid rendering component if there's points selected
+    private List<int> SelectedPoints = new List<int>();
+
+    [Parameter] public string PieChartId { get; set; } = string.Empty;
+
+    private string[] Palette;
+    [Parameter] public string[]? LightPalette { get; set; }
+    [Parameter] public string[]? DarkPalette { get; set; }
+
+    [Parameter] public Dictionary<string, object>? ToolTipAttributes { get; set; } = new Dictionary<string, object>(){ {"Enable", true }, {"Format", "${point.x}: <b>${point.y}%</b>" } };
+    [Parameter] public Dictionary<string, object>? LegendAttributes { get; set; } = new Dictionary<string, object>() { { "Position", Syncfusion.Blazor.Charts.LegendPosition.Bottom } };
+
+    [Parameter] public Dictionary<string, object>? SeriesAttributes { get; set; }
+    [Parameter] public Dictionary<string, object>? LabelAttributes { get; set; } = new Dictionary<string, object>() { { "Visible", false } };
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        // Set the color palette
+        if (ThemeProvider.isDarkMode != null && LightPalette != null && DarkPalette != null)
+        {
+            Palette = (bool)ThemeProvider.isDarkMode ? DarkPalette : LightPalette;
+        }
+        else
+        {
+            Palette = ThemeProvider.GetColors();
+        }
+    }
+
+    // Refresh component
+    public void Refresh()
+    {
+        try 
+        {
+            if (PieChartRef != null)
+            {
+                PieChartRef?.Refresh();
+            }
+        }
+        catch(Exception ex)
+        {
+            Logger.LogError($"Error trying to Refresh PieChartComponent : {ex.Message}\n{ex.StackTrace}");
+        }
+    }
+
+    // Call StateHasChanged() and authorize first render
+    public void StateChanged()
+    {
+        if (!IsParentCreated)
+        {
+            // Initiate the first render of the component
+            IsParentCreated = true;
+        }
+
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+
+    // Authorize or prohibit the render of the component
+    protected override bool ShouldRender()
+    {
+        base.ShouldRender();
+
+        return AuthorizeRender;
+    }
+
+    public void SetAuthorizeRender(int count)
+    {
+        if (count == 0)
+        {
+            // Authorize render only if there's no points selected
+            AuthorizeRender = true;
+        }
+        else
+        {
+            AuthorizeRender = false;
+        }
+    }
+
+    // Event OnSelectionChanged
+    public void OnSelectionChanged(AccumulationSelectionCompleteEventArgs args)
+    {
+        SetAuthorizeRender(args.SelectedDataValues.Count);
+
+        SelectedPoints.Clear();
+        if (args.SelectedDataValues.Count != 0)
+        {
+            // Add index of the point in SelectedPoints list
+            SelectedPoints.Add(Convert.ToInt32(args.SelectedDataValues.First().PointIndex));
+        }
+    }
+
+    // Event OnLegendClick
+    public void OnLegendClick(AccumulationLegendClickEventArgs args)
+    {
+        int clickedPointIndex = args.Point.Index; 
+
+        if (SelectedPoints.Contains(clickedPointIndex))
+        {
+            SelectedPoints.Clear();
+        }
+        else
+        {
+            // Add index of the point in SelectedPoints list
+            SelectedPoints.Clear();
+            SelectedPoints.Add(clickedPointIndex);
+        }
+
+        SetAuthorizeRender(SelectedPoints.Count);
+    }
+
+    public class PieData
+    {
+        public string Name { get; set; }
+        public double Percentage { get; set; }
+    } 
+}

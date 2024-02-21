@@ -1,0 +1,134 @@
+﻿@typeparam GridTValue
+@inject ILogger<GridComponent<GridTValue>> Logger
+
+@* GRID COMPONENT *@
+
+<SfGrid @ref="GridRef" TValue="GridTValue" DataSource="@DataSource" ID="@GridId" @attributes="@GridAttributes" Width="100%" Height="100%" EnableAdaptiveUI="true" >
+
+    <GridPageSettings @attributes="@GridPageAttributes"></GridPageSettings>
+    <GridEditSettings @attributes="@GridEditAttributes"></GridEditSettings>
+    <GridFilterSettings @attributes="@GridFilterAttributes"></GridFilterSettings>
+    <GridGroupSettings @attributes="@GridGroupAttributes"></GridGroupSettings>
+
+    <GridColumns>
+        @foreach (var column in ColumnsList)
+        {
+            @if (column.ChildColumns != null && column.ChildColumns.Any()) // If the column has child columns
+            {
+                <GridColumn @attributes="@column.ColumnAttributes">
+                    <GridColumns>
+                        @foreach (var childColumn in column.ChildColumns)
+                        {
+                             @if(childColumn.Template != null) // If the child column has a template
+                             {
+                                <GridColumn @attributes="@childColumn.ColumnAttributes">
+                                    <Template>
+                                        @childColumn.Template(context) 
+                                    </Template>
+                                 </GridColumn>
+                             }
+                             else 
+                             {
+                                 <GridColumn @attributes="@childColumn.ColumnAttributes"></GridColumn>
+                             }
+                        }
+                    </GridColumns>
+                </GridColumn>
+            }
+            else if(column.Template != null) // If the column has a template
+            {
+                <GridColumn @attributes="@column.ColumnAttributes">
+                    <Template>
+                        @column.Template(context) 
+                    </Template>
+                </GridColumn>
+            }
+            else  // If the column doesn't have child columns or template 
+            {
+                <GridColumn @attributes="@column.ColumnAttributes"></GridColumn>
+            }
+        }   
+    </GridColumns>
+
+</SfGrid>
+
+
+@code {
+    private SfGrid<GridTValue>? GridRef;
+    
+    [Parameter] public IEnumerable<GridTValue> DataSource { get; set; } = new List<GridTValue>();
+    [Parameter] public string GridId { get; set; } = string.Empty;
+
+    [Parameter] public Dictionary<string, object>? GridAttributes { get; set; }
+    [Parameter] public Dictionary<string, object>? GridPageAttributes { get; set; }
+    [Parameter] public Dictionary<string, object>? GridEditAttributes { get; set; }
+    [Parameter] public Dictionary<string, object>? GridFilterAttributes { get; set; }
+    [Parameter] public Dictionary<string, object>? GridGroupAttributes { get; set; }
+
+    [Parameter] public List<GridColumnsConfig> ColumnsList { get; set; } = new List<GridColumnsConfig>();
+
+    public class GridColumnsConfig
+    {
+        public Dictionary<string, object>? ColumnAttributes { get; set; }
+        public RenderFragment<object>? Template { get; set; }
+        public List<GridColumnsConfig>? ChildColumns { get; set; } 
+    }
+
+    // Refresh component
+    public void Refresh()
+    {
+        try
+        {
+            if(GridRef != null)
+            {
+                GridRef?.Refresh();
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error trying to Refresh GridComponent : {ex.Message}\n{ex.StackTrace}");
+        }
+    }
+}
+
+<style>
+
+    /* Header row */
+
+    .e-grid .e-gridheader {
+        padding: 0px !important;
+    }
+
+    .e-grid .e-gridheader .e-headercelldiv {
+        font-family: var(--title-font);
+        font-weight: bold;
+    }
+
+    .e-grid .e-gridheader .e-columnheader{
+        background-color: var(--grid-subtitle) !important;
+    }
+
+        .dark .e-grid .e-gridheader .e-columnheader{
+            background-color: var(--grid-subtitle-dark) !important;
+        }
+
+    /* Rows on mouse hover */
+    .e-grid .e-row:hover .e-rowcell {
+        background-color: var(--grid-hover) !important;
+        font-weight: bold;
+    }
+
+        .dark .e-grid .e-row:hover .e-rowcell {
+            background-color: var(--grid-hover-dark) !important;
+        }
+    
+    /* Alternate rows */
+    .e-grid .e-altrow {
+        background-color: var(--interval);
+    }
+
+       .dark .e-grid .e-altrow {
+        background-color: var(--interval-dark);
+       }
+
+</style>

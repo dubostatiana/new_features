@@ -1,0 +1,232 @@
+﻿@page "/station/{id}"
+@using AxorP1.Shared.Components
+@using static AxorP1.Shared.Components.Panels.ChartComponent
+@inherits StationPageBase
+
+@if (DataSource.Count == 0 || WrongParam == null)
+{
+    @*  Loading *@
+    <LoaderComponent />
+}
+else if ((bool)WrongParam)
+{
+    @* Wrong parameter *@
+    <Error404 />
+}
+else
+{
+    <PageTitle>@Station.StationName</PageTitle>
+
+    <div class="blurry-background"></div> @* background *@
+
+    <div class="sm-center">  @* Align schema to the center on small screens  *@
+
+        <div class="StationContainer">  @* Station image container *@
+
+            <div class="StationButtons">
+                @* History button *@
+                <button class="btnStation btnHistory btn btn-outline-success" @onclick="OpenDialog">Historique</button>
+                
+                @* Full screen button *@
+                <button class="btnStation btnFullScreen btn btn-outline-success" @onclick="@FullScreenRequest">
+                    <SfIcon class="FullScreenIcon" Name="@FullScreenIcon"></SfIcon>  @* Full screen icon *@
+                </button>
+            </div>
+
+            <h3 class="title">@Station.StationName</h3> @* Title *@
+
+            <div id="stationImage"></div> @* Image *@
+
+            @* fields *@
+            <span id="upstream">@Station.UpstreamLevel</span>
+            <span id="downstream">@Station.DownstreamLevel</span>
+            <span id="fall">@Station.FallHeight</span>
+            <span id="production">@Station.CentralProduction</span>
+            <span id="flowrate">@Station.TotalFlowRate</span>
+
+            @* tables with fields *@
+            <table id="productionProgress">
+                <tr>
+                    <td></td>
+                    <th>OBJECTIF</th>
+                    <th>RÉALISÉ</th>
+                    <th>%</th>
+                </tr>
+                <tr>
+                    <th>MENSUELLE</th>
+                    <td><span>@Station.MonthlyProductionTarget</span></td>
+                    <td><span>@Station.MonthlyProductionActual</span></td>
+                    <td><span>@Math.Round(Station.MonthlyPercentage * 100, 0)</span></td>
+                </tr>
+                <tr>
+                    <th>ANNUELLE</th>
+                    <td><span>@Station.AnnualProductionTarget</span></td>
+                    <td><span>@Station.AnnualProductionActual</span></td>
+                    <td><span>@Math.Round(Station.AnnualPercentage * 100, 0)</span></td>
+                </tr>
+            </table>
+
+
+            @*  groups related fields *@
+            @{ var count = Station.Groups.Count;
+
+            if(count == 1 || count == 2) // All Station objects should have one or two groups
+            {
+                bool hasTwoGroups = count == 2 ? true : false; // Check if the station has two groups
+
+                Group group1 = Station.Groups[0];
+                Group? group2 = null;
+
+                string background1 = group1.GroupTA ? "bg-red" : "bg-green";
+                string  background2 = string.Empty;
+
+                if (hasTwoGroups) { 
+                    group2 = Station.Groups[1];
+                    background2 = group2.GroupTA ? "bg-red" : "bg-green";
+                }
+
+                @* groups tables *@
+
+                <table id="groupTA">
+                    <tr>
+                        <th>GRP #1</th>
+                        @if (group2 != null)
+                        {
+                            <th>GRP #2</th>
+                        }
+                    </tr>
+                    <tr>
+                        <td><span class="groupCircle @background1"></span></td>
+                        @if (group2 != null)
+                        {
+                            <td><span class="groupCircle @background2"></span></td>
+                        }
+                    </tr>
+                </table>
+
+                <table id="groupProduction">
+                    <tr>
+                        <th>GRP #1</th>
+                        @if (group2 != null)
+                        {
+                            <th>GRP #2</th>
+                        }
+                    </tr>
+                    <tr>
+                        <td><span>@group1.Production</span></td>
+                        @if (group2 != null)
+                        {
+                            <td><span>@group2.Production</span></td>
+                        }
+                    </tr>
+                </table>
+
+                <table id="groupFlowrate">
+                    <tr>
+                        <th>GRP #1</th>
+                        @if (group2 != null)
+                        {
+                            <th>GRP #2</th>
+                        }
+                    </tr>
+                    <tr>
+                        <td><span>@group1.FlowRate</span></td>
+                        @if (group2 != null)
+                        {
+                            <td><span>@group2.FlowRate</span></td>
+                        }
+                    </tr>
+                </table>
+
+                <table id="groupGridDiff">
+                    <tr>
+                        <td></td>
+                        <th>GRP #1</th>
+                        @if (group2 != null)
+                        {
+                            <th>GRP #2</th>
+                        }
+                    </tr>
+                    <tr>
+                        <th>FINES</th>
+                        <td><span>@group1.FineGridDifferential</span></td>
+                        @if (group2 != null)
+                        {
+                            <td><span>@group2.FineGridDifferential</span></td>
+                        }
+                    </tr>
+                    <tr>
+                        <th>GROSSIÈRES</th>
+                        <td><span>@group1.CoarseGridDifferential</span></td>
+                        @if (group2 != null)
+                        {
+                            <td><span>@group2.CoarseGridDifferential</span></td>
+                        }
+                    </tr>
+                </table>
+            } 
+            }
+
+        </div>
+    </div>
+
+
+  @* Dialog to show DashboardLayout *@
+  <SfDialog Visible="@IsDialogVisible" CssClass="HistoryDialog" Target=".content" CloseOnEscape="true" ShowCloseIcon="true" Width="100%" Height="100%">
+  <DialogEvents OnClose="@CloseDialog"></DialogEvents>
+  <DialogAnimationSettings Effect="DialogEffect.SlideTop" Duration=500 />
+  <DialogTemplates>
+  <Header><h3 class="title p-0 my-3">@Station.StationName</h3></Header>
+  <Content>
+
+        @if(PastDataSource.Count() == 0)
+        {
+            @*  Loading *@
+            <LoaderComponent />
+        }
+        else
+        {
+            @* DashboardLayout *@
+                <div>
+                    <ErrorBoundary>
+                        <ChildContent>
+
+                            <SfDashboardLayout @ref="@DashboardLayout" ID="SfStationDashboardLayout" Columns="2" CellSpacing="@IndexBase.Spacing" MediaQuery="@MediaQuery" AllowResizing="false" ShowGridLines="false" AllowFloating="false" AllowDragging="false">
+                                <DashboardLayoutEvents Created="@Created" />
+                                <DashboardLayoutPanels>
+
+                                    @try
+                                    {
+                                        @foreach (PanelObject Panel in PanelData)
+                                        {
+                                            <DashboardLayoutPanel Id="@Panel.Id" Row="@Panel.Row" Column="@Panel.Column" SizeX="@Panel.SizeX" SizeY="@Panel.SizeY" MinSizeX="@Panel.MinSizeX" MinSizeY="@Panel.MinSizeY">
+                                                <HeaderTemplate><div>@Panel.Title</div></HeaderTemplate>
+                                                <ContentTemplate>
+                                                    <div class="panel">
+                                                          <DynamicComponent @ref="@componentsReferences[Panel.Id]" Type="@Panel.ComponentType" Parameters="@Panel.Parameters" />
+                                                    </div>
+                                                </ContentTemplate>
+                                           </DashboardLayoutPanel>
+                                        }
+                                    }
+                                    catch(Exception ex)
+                                    {
+                                            Logger.LogError($"Error: {ex.Message} {ex.StackTrace}");
+                                    }
+
+                                </DashboardLayoutPanels>
+                            </SfDashboardLayout>
+
+                        </ChildContent>
+                        <ErrorContent>
+                            @* Error message *@
+                            <Error />
+                        </ErrorContent>
+                    </ErrorBoundary>
+                </div>
+            }
+   </Content>
+   </DialogTemplates>
+   </SfDialog>
+    
+}

@@ -1,0 +1,218 @@
+﻿
+/* StationPage related styles */
+
+.blurry-background { /* background */
+    position: absolute;
+    top: 0;
+    height: 100vh; /* only visible if station schema is smaller than the viewport height */
+    width: 100%;
+    filter: blur(0.4rem); /* blur filter */
+    -webkit-filter: blur(0.4rem);
+    background: url(/images/Schema-Centrale_FOND-CLAIR_Sans-txt.png);
+    background-size: cover;
+    background-position: right;
+}
+
+.dark .blurry-background {
+    background: url("/images/Schema-Centrale_FOND-SOMBRE_Sans-txt.png");
+    background-size: cover;
+    background-position: right;
+}
+
+.sm-center {
+    height: 75vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.sm-center .StationContainer{ /* align content to the center on small screens */
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+
+.StationContainer { /* image container */
+    position: relative;
+    width: 100%;
+}
+
+.StationContainer h3 {
+    position:absolute;
+    font-size: 2.5vw;
+    padding: 0px;
+    top: 1.5vw;
+    left: 2vw;
+
+    transform: scale(0);
+    animation: fadeIn 1s;
+    animation-delay: 0.2s;
+    animation-fill-mode: forwards;
+}
+
+
+    .StationContainer span { /* text on image */
+        font-family: var(--content-font);
+        font-weight: 500;
+        position: absolute;
+        transition: 0.4s linear;
+        border: 1px solid black;
+        color: black;
+        background-color: var(--schema-fields);
+        font-size: 1.1vw;
+        padding: 0vw 1vw;
+
+        transform: scale(0);
+        animation: fadeIn 1s;
+        animation-delay: 0.2s;
+        animation-fill-mode: forwards;
+    }
+
+    .dark .StationContainer span { 
+        color: white;
+        background-color: var(--schema-fields-dark);
+    }
+
+
+.StationContainer #stationImage { /* image */
+    width: inherit;
+    height: inherit;
+    user-select: none;
+    content: url("/images/Schema-Centrale_FOND-CLAIR.png");
+}
+
+    .dark .StationContainer #stationImage {
+        content: url("/images/Schema-Centrale_FOND-SOMBRE.png");
+    }
+
+.groupCircle {
+    border-radius: 50%;
+    transition: 0.4s linear;
+    margin: auto;
+    width: 2vw;
+    height: 2vw;
+    box-shadow: inset 0.1875em 0.1875em 0.625em rgba(255, 255, 255, 0.5), inset -0.1875em -0.1875em 0.625em rgba(0, 0, 0, 0.5), 0 0.25em 0.375em rgba(0, 0, 0, 0.2);
+}
+
+
+/* Table */
+
+.StationContainer table {
+    position: absolute;
+    font-family: var(--content-font);
+    text-align: center;
+    font-size: 1.1vw;
+
+    transform: scale(0);
+    animation: fadeIn 1s;
+    animation-fill-mode: forwards;
+    animation-delay: 0.2s;
+}
+
+    .StationContainer table td {
+        padding: 0.2vw 0.4vw; 
+    }
+
+    .StationContainer table th {
+        padding: 0vw 0.4vw;
+    }
+
+
+    .StationContainer table span {
+        position: initial;
+        display:block;
+    }
+
+/*  Image fields */
+
+/* Group fields (table) */
+
+.StationContainer #productionProgress {
+    top: 84%;
+    left: 4%;
+}
+
+.StationContainer #groupTA {
+    top: 18%;
+    left: 49%;
+}
+
+.StationContainer #groupProduction {
+    top: 57%;
+    left: 50%;
+}
+
+.StationContainer #groupFlowrate {
+    top: 42%;
+    left: 32%;
+}
+
+.StationContainer #groupGridDiff {
+    top: 18%;
+    left: 24%;
+}
+
+/* Global fields */
+
+.StationContainer #upstream {
+    top: 17%;
+    left: 6%;
+}
+
+.StationContainer #downstream {
+    top: 80%;
+    left: 83%;
+}
+
+.StationContainer #fall {
+    top: 74%;
+    left: 33%;
+}
+
+.StationContainer #production {
+    top: 17%;
+    left: 90%;
+}
+
+.StationContainer #flowrate {
+    top: 86.9%;
+    left: 68%;
+}
+
+@keyframes fadeIn {
+    to {
+        transform: scale(1);
+    }
+}
+
+/* buttons */
+
+.StationButtons {
+    position: absolute;
+    right:0;
+    display:flex;
+    flex-direction:row;
+    margin-top: 1.5vw;
+}
+
+.StationButtons button:last-child {
+     margin-right: 1vw;
+}
+
+.btnStation {
+    font-family: var(--content-font);
+    background: rgba(255, 255, 255, 0.4);
+    font-size: 1.2vw;
+    padding: 0.5vw;
+    margin-right: 0.2vw;
+}
+    .dark .btnStation {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+/* Full screen icon */
+.StationContainer .btnFullScreen ::deep .FullScreenIcon.e-icons {
+     vertical-align: middle;
+     font-size: 1.8vw !important;
+}
+    

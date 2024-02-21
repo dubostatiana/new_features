@@ -1,0 +1,43 @@
+@using Microsoft.AspNetCore.Components.Web
+@namespace AxorP1.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="~/" />
+    <link rel="stylesheet" href="bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="app.css" />
+    <link href="syncfusion-blazor-icons.css" rel="stylesheet" />
+    <link rel="stylesheet" href="AxorP1.styles.css" />
+    <link rel="icon" type="image/svg" href="~/images/ICONE-AXOR_VERT.svg" />
+    <link rel="stylesheet" href="bootstrap/bootstrap.min.css" />
+    
+    <link id="theme-link" rel="stylesheet" href="_content/Syncfusion.Blazor.Themes/fluent.css" /> @* FOR LIGHT THEME *@
+    @* <link rel="stylesheet" href="_content/Syncfusion.Blazor.Themes/fluent-dark.css" /> FOR DARK THEME  *@
+
+    <script src="_content/Syncfusion.Blazor.Core/scripts/syncfusion-blazor.min.js" type="text/javascript"></script>
+    <script src="/scripts/functions.js"></script>
+    <script src="/scripts/lodash.min.js"></script>
+
+    <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
+</head>
+<body>
+    @RenderBody()
+
+    <div id="blazor-error-ui">
+        <environment include="Staging,Production">
+            An error has occurred. This application may no longer respond until reloaded.
+        </environment>
+        <environment include="Development">
+            An unhandled exception has occurred. See browser dev tools for details.
+        </environment>
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+    <script src="_framework/blazor.server.js"></script>
+</body>
+</html>

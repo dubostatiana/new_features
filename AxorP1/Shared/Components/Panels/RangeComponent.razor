@@ -1,0 +1,266 @@
+﻿@using AxorP1.Services
+@using Syncfusion.Blazor.Buttons
+@using static ChartComponent
+@inject ILogger<RangeComponent> Logger
+@inject ThemeProvider ThemeProvider
+
+@* RANGE COMPONENT *@
+
+@if (IsParentCreated)
+{
+    @if (Toolbar)
+    {
+        <SfToolbar @ref=@ToolbarRef CssClass="rangeToolbar"  Width="100%">
+           <ToolbarEvents Clicked="OnToolbarItemClick"></ToolbarEvents>
+           <ToolbarItems>
+                <ToolbarItem Text="1M" TooltipText="1 mois"></ToolbarItem>
+                <ToolbarItem Text="2M" TooltipText="2 mois"></ToolbarItem>
+                <ToolbarItem Text="6M" TooltipText="6 mois"></ToolbarItem>
+                <ToolbarItem Text="1A" TooltipText="1 an"></ToolbarItem>
+                <ToolbarItem Text="2A" TooltipText="2 ans"></ToolbarItem>
+                <ToolbarItem Text="Tous" TooltipText="Tout sélectionner" Align="ItemAlign.Right"></ToolbarItem>
+           </ToolbarItems>
+        </SfToolbar>
+    }
+
+  <div class="rangeContainer">
+         
+        @* RANGE NAVIGATOR *@
+        <div class="rangeNavigator">
+
+            <SfRangeNavigator @ref=RangeRef @attributes=@RangeAttributes Value=@value Id="rangeNav" Theme="@ThemeProvider.AppTheme" Width="100%" Height="100%">
+
+                <RangeNavigatorEvents Changed="OnRangeChanged" Loaded="OnRangeLoaded"></RangeNavigatorEvents>
+
+                <RangeNavigatorMargin @attributes=@RangeMarginAttributes></RangeNavigatorMargin>
+                <RangeNavigatorMajorGridLines @attributes=@RangeLinesAttributes></RangeNavigatorMajorGridLines>
+                <RangeNavigatorRangeTooltipSettings @attributes=@RangeTooltipAttributes></RangeNavigatorRangeTooltipSettings>
+
+                <RangeNavigatorSeriesCollection>
+                    <RangeNavigatorSeries @attributes=@RangeSeriesAttributes Fill=@Palette.First() >
+                        <RangeNavigatorSeriesBorder @attributes=@RangeBorderAttributes></RangeNavigatorSeriesBorder>
+                    </RangeNavigatorSeries>
+                </RangeNavigatorSeriesCollection>
+
+            </SfRangeNavigator>
+            
+        </div>
+
+        @* CHART COMPONENT *@
+        <div class="rangeChart">
+            <ChartComponent @ref=@ChartRef ChartId="rangeNavChart"
+                            DarkPalette=@DarkPalette 
+                            LightPalette=@LightPalette
+                            AreaBorderAttributes=@(new Dictionary<string, object> { ["Width"] = (double)0, ["Color"] = "transparent"})
+                            MarginAttributes=@(new Dictionary<string, object> { ["Left"] = (double)5, ["Right"] = (double)25, ["Top"] = (double)15, ["Bottom"] = (double)10 })
+                            XAxisAttributes=@(new Dictionary<string, object> {
+                                ["ValueType"] = Syncfusion.Blazor.Charts.ValueType.DateTime,
+                                ["Interval"] = (double)1,
+                                ["IntervalType"] = IntervalType.Months,
+                                ["ZoomFactor"] = ZF, 
+                                ["ZoomPosition"] = ZP, 
+                            })
+                            YAxisAttributes=@(new Dictionary<string, object> { ["ValueType"] = Syncfusion.Blazor.Charts.ValueType.Double, ["Title"] = FormatY })
+                            CrosshairAttributes=@(new Dictionary<string, object> { ["Enable"] = EnableCrosshairLine, ["LineType"] = LineType.Vertical })
+                            CrosshairLineAttributes=@(new Dictionary<string, object> { ["Color"] = "grey", ["Width"] = (double)1 })
+                            LegendAttributes=@(new Dictionary<string, object> { ["Visible"] = true, ["Alignment"] = Syncfusion.Blazor.Charts.Alignment.Near })
+                            ToolTipAttributes=@(new Dictionary<string, object> { ["Enable"] = true, ["Format"] = "${point.x}: <b>${point.y} " + $"{FormatY}</b>"})
+                            ChartSeriesList=@ChartSeriesList />
+           
+        </div>
+  </div>
+}
+
+@code {
+    private SfRangeNavigator? RangeRef;
+    private ChartComponent? ChartRef;
+    private SfToolbar? ToolbarRef;
+
+    private bool IsParentCreated;  // Initiate the render only if the parent has been created
+
+    private string[] Palette;
+    [Parameter] public string[]? LightPalette { get; set; }
+    [Parameter] public string[]? DarkPalette { get; set; }
+
+    // RangeNav Parameters
+    [Parameter] public bool Toolbar { get; set; }
+    [Parameter] public DateTime[]? value { get; set; } = new DateTime[] { DateTime.Now, DateTime.Now.AddMonths(-12) }; // Default selected range : 12 months from now
+
+    [Parameter] public Dictionary<string, object>? RangeAttributes { get; set; } = new Dictionary<string, object> { { "LabelPosition", AxisPosition.Outside }, { "ValueType", Syncfusion.Blazor.Charts.RangeValueType.DateTime }, { "Interval", (double)1 }, { "IntervalType", RangeIntervalType.Years } };
+    [Parameter] public Dictionary<string, object>? RangeMarginAttributes { get; set; } = new Dictionary<string, object> { { "Left", (double)15 }, { "Right", (double)15 }, { "Top", (double)10 }, { "Bottom", (double)0 } }; 
+    [Parameter] public Dictionary<string, object>? RangeLinesAttributes { get; set; } = new Dictionary<string, object> { { "Width", (double)1 } };
+    [Parameter] public Dictionary<string, object>? RangeTooltipAttributes { get; set; } = new Dictionary<string, object> { { "Enable", true }, { "Format", "yyyy-MM-dd" }, { "DisplayMode", TooltipDisplayMode.Always } };
+    [Parameter] public Dictionary<string, object>? RangeBorderAttributes { get; set; } = new Dictionary<string, object> { { "Width", (double)2 } };
+    [Parameter] public Dictionary<string, object>? RangeSeriesAttributes { get; set; }
+
+    // Chart Parameters
+    [Parameter] public string FormatY { get; set; } = string.Empty;
+    [Parameter] public bool EnableCrosshairLine { get; set; }
+    [Parameter] public List<ChartSeriesConfig> ChartSeriesList { get; set; } = new List<ChartSeriesConfig>();
+
+    private double ZF = 1;
+    private double ZP = 0;
+    private int counter = 0;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        // Set the color palette
+        if (ThemeProvider.isDarkMode != null && LightPalette != null && DarkPalette != null)
+        {
+            Palette = (bool)ThemeProvider.isDarkMode ? DarkPalette : LightPalette;
+        }
+        else
+        {
+            Palette = ThemeProvider.GetColors();
+        }
+    }
+
+    // Loaded event on RangeNavigator
+    public async void OnRangeLoaded(RangeLoadedEventArgs args)
+    {
+        if(counter == 0)
+        {
+            // Refresh RangeNavigator on first Load
+            await RangeRef?.RefreshAsync();
+            counter++;
+        }
+    }
+
+    // Changed event on RangeNavigator
+    public void OnRangeChanged(Syncfusion.Blazor.Charts.ChangedEventArgs args)
+    {
+        ZF = args.ZoomFactor;
+        ZP = args.ZoomPosition;
+
+        InvokeAsync(() =>
+        {
+            StateChanged();
+        });
+    }
+
+    // Refresh component
+    public async void Refresh()
+    {
+        //  Parent Layout is determined after a delay,
+        //  a delay must be provided before refreshing the Range component
+        await Task.Delay(500);
+        try
+        {
+            if(RangeRef != null)
+            {
+                // Refresh two times for better render
+                await RangeRef?.RefreshAsync();
+                await RangeRef?.RefreshAsync();
+
+            }
+
+            if(ChartRef != null)
+            {
+                ChartRef?.Refresh();
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Error trying to Refresh RangeComponent : {ex.Message}\n{ex.StackTrace}");
+        }
+    }
+
+    // Call StateHasChanged() and authorize render
+    public void StateChanged()
+    {
+        if (!IsParentCreated)
+        {
+            // Initiate the first render of the component
+            IsParentCreated = true;
+        }
+
+        InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+        ChartRef?.StateChanged();
+    }
+
+    // Clicked Toolbar event
+    public async Task OnToolbarItemClick(ClickEventArgs args)
+    {
+        var clickedItemText = args.Item.Text;
+
+        // Define a dictionary to map toolbar item text to corresponding date range
+        var dateRanges = new Dictionary<string, DateTime[]?>
+        {
+            { "1M", new DateTime[] { DateTime.Now, DateTime.Now.AddMonths(-1) } }, // 1 month
+            { "2M", new DateTime[] { DateTime.Now, DateTime.Now.AddMonths(-2) } }, // 2 months
+            { "6M", new DateTime[] { DateTime.Now, DateTime.Now.AddMonths(-6) } }, // 6 months
+            { "1A", new DateTime[] { DateTime.Now, DateTime.Now.AddYears(-1) } },   // 1 year
+            { "2A", new DateTime[] { DateTime.Now, DateTime.Now.AddYears(-2) } },   // 2 years
+            { "Tous", null } // All data
+        };
+
+        // Update the range
+        if (dateRanges.ContainsKey(clickedItemText))
+        {
+            var newRange = dateRanges[clickedItemText];
+            value = newRange;
+
+           await RangeRef?.RefreshAsync();
+        }
+    }
+
+}
+
+
+<style type="text/css">
+
+    .rangeContainer {
+        height: 100%;
+        width: inherit;
+    }
+
+    .rangeNavigator { 
+        height: 20%;
+    }
+
+    .rangeChart  { 
+       height: 80%;
+    }
+
+    #rangeNavChartSeriesCollection ellipse {
+        visibility:hidden;
+    }
+
+</style>
+
+@if (Toolbar)
+{
+    <style>
+
+        .rangeNavigator {
+            height: 20%;
+        }
+
+        .rangeChart {
+            height: 72%;
+        }
+
+        .rangeToolbar {
+            background-color: var(--grid-subtitle);
+        }
+
+            .dark .rangeToolbar {
+                background-color: var(--grid-subtitle-dark);
+            }
+
+        .rangeToolbar span {
+            font-family: var(--title-font);
+            font-weight: 600;
+        }
+
+        .rangeToolbar button {
+            border-radius:5px !important;
+        }
+
+    </style>
+}
