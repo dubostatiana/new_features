@@ -9,17 +9,17 @@
 		<PackageReference Include="Microsoft.AspNetCore.Components" Version="6.0.5" />
 		<PackageReference Include="Blazored.LocalStorage" Version="4.4.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-		<PackageReference Include="Syncfusion.Blazor.DropDowns" Version="24.2.4" />
-		<PackageReference Include="Syncfusion.Blazor.Buttons" Version="24.2.4" />
-		<PackageReference Include="Syncfusion.Blazor.Charts" Version="24.2.4" />
-		<PackageReference Include="Syncfusion.Blazor.Grid" Version="24.2.4" />
-		<PackageReference Include="Syncfusion.Blazor.Layouts" Version="24.2.4" />
-		<PackageReference Include="Syncfusion.Blazor.Maps" Version="24.2.4" />
-		<PackageReference Include="Syncfusion.Blazor.Popups" Version="24.2.4" />
-		<PackageReference Include="Syncfusion.Blazor.RangeNavigator" Version="24.2.4" />
-		<PackageReference Include="Syncfusion.Blazor.StockChart" Version="24.2.4" />
-		<PackageReference Include="Syncfusion.Blazor.Navigations" Version="24.2.4" />
-		<PackageReference Include="Syncfusion.Blazor.Themes" Version="24.2.4" />
+		<PackageReference Include="Syncfusion.Blazor.DropDowns" Version="24.2.9" />
+		<PackageReference Include="Syncfusion.Blazor.Buttons" Version="24.2.9" />
+		<PackageReference Include="Syncfusion.Blazor.Charts" Version="24.2.9" />
+		<PackageReference Include="Syncfusion.Blazor.Grid" Version="24.2.9" />
+		<PackageReference Include="Syncfusion.Blazor.Layouts" Version="24.2.9" />
+		<PackageReference Include="Syncfusion.Blazor.Maps" Version="24.2.9" />
+		<PackageReference Include="Syncfusion.Blazor.Popups" Version="24.2.9" />
+		<PackageReference Include="Syncfusion.Blazor.RangeNavigator" Version="24.2.9" />
+		<PackageReference Include="Syncfusion.Blazor.StockChart" Version="24.2.9" />
+		<PackageReference Include="Syncfusion.Blazor.Navigations" Version="24.2.9" />
+		<PackageReference Include="Syncfusion.Blazor.Themes" Version="24.2.9" />
 	</ItemGroup>
 	<ItemGroup>
 	  <Compile Update="Resources\SfResources.Designer.cs">
