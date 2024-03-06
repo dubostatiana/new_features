@@ -29,7 +29,7 @@ builder.Logging.AddEventLog();
 
 var app = builder.Build();
 //Register Syncfusion license https://help.syncfusion.com/common/essential-studio/licensing/how-to-generate
-Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjHTQxAR8/V1NAaF1cWWhLYVJwWmFZfVpgfV9HZFZUR2YuP1ZhSXxXdkdiWn5bcXxXQWZaUEU=");
+Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjHTQxAR8/V1NAaF1cVGhIfEx1RHxQdld5ZFRHallYTnNWUj0eQnxTdEFjWn9YcXVQQGBfVEd1Xw==");
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
